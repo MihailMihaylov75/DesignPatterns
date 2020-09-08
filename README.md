@@ -8,3 +8,5 @@ Examples of the following Design Patterns:
 - Factories
 - Prototype
 - Singelton 
+- Facade
+- Flyweight
