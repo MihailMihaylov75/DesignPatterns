@@ -10,3 +10,7 @@ Examples of the following Design Patterns:
 - Singelton 
 - Facade
 - Flyweight
+- Proxy
+- Chain of responsibility
+- Command
+

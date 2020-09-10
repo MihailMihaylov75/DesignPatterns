@@ -64,9 +64,9 @@ class BetterFormattedText:
             return self.start <= position <= self.end
 
     def get_range(self, start, end):
-        range = self.TextRange(start, end)
-        self.formatting.append(range)
-        return range
+        text_range = self.TextRange(start, end)
+        self.formatting.append(text_range)
+        return text_range
 
     def __str__(self):
         result = []
@@ -77,6 +77,30 @@ class BetterFormattedText:
                     c = c.upper()
             result.append(c)
         return ''.join(result)
+
+
+class Sentence:
+    def __init__(self, plain_text):
+        self.words = plain_text.split(' ')
+        self.tokens = {}
+
+    def __getitem__(self, item):
+        wt = self.WordToken()
+        self.tokens[item] = wt
+        return self.tokens[item]
+
+    class WordToken:
+        def __init__(self, capitalize=False):
+            self.capitalize = capitalize
+
+    def __str__(self):
+        result = []
+        for i in range(len(self.words)):
+            w = self.words[i]
+            if i in self.tokens and self.tokens[i].capitalize:
+                w = w.upper()
+            result.append(w)
+        return ' '.join(result)
 
 
 if __name__ == '__main__':
@@ -91,9 +115,9 @@ if __name__ == '__main__':
 
     u2 = User2('Jim Jones')
     u3 = User2('Frank Jones')
-    print(u2.names)
-    print(u3.names)
-    print(User2.strings)
+    # print(u2.names)
+    # print(u3.names)
+    # print(User2.strings)
 
     users2 = []
 
@@ -103,8 +127,11 @@ if __name__ == '__main__':
 
     ft = FormattedText('This is a brave new world')
     ft.capitalize(10, 15)
-    print(ft)
+    # print(ft)
 
     bft = BetterFormattedText('This is a brave new world')
     bft.get_range(16, 19).capitalize = True
-    print(bft)
+
+    sentence = Sentence('hello world')
+    sentence[1].capitalize = True
+    print(sentence)
