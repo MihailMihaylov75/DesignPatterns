@@ -7,10 +7,13 @@ Examples of the following Design Patterns:
 - Decorators
 - Factories
 - Prototype
-- Singelton 
+- Singleton 
 - Facade
 - Flyweight
 - Proxy
 - Chain of responsibility
 - Command
+- Interpreter
+- Iterator
+- Mediator
 
