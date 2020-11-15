@@ -16,4 +16,6 @@ Examples of the following Design Patterns:
 - Interpreter
 - Iterator
 - Mediator
+- Memento
+- Observer
 
