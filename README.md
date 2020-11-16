@@ -18,4 +18,6 @@ Examples of the following Design Patterns:
 - Mediator
 - Memento
 - Observer
+- State
+- Strategy
 
