@@ -20,4 +20,6 @@ Examples of the following Design Patterns:
 - Observer
 - State
 - Strategy
+- Template
+- Visitor
 
