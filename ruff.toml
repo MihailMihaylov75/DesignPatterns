@@ -1,0 +1,15 @@
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "W", "PL", "C90"]
+ignore = [
+  "E203",  # whitespace before ':', keeps compatibility with many formatters
+  "E266",  # long inline comment markers
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["PLR2004"]
+
+[format]
+quote-style = "double"

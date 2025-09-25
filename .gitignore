@@ -1,0 +1,56 @@
+# Python cache / build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Test & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# Reports & artifacts
+reports/
+allure-results/
+allure-report/
+downloads/
+tmp/
+
+# Config & env files
+*.env
+.env.*
+!*.env.example
+# !config/settings.example.yaml
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Optional: pyenv marker
+.python-version
+
+# Notebooks
+.ipynb_checkpoints/

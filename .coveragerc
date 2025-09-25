@@ -1,0 +1,22 @@
+[run]
+source = src
+branch = True
+omit =
+    tests/*
+    .venv/*
+    **/__init__.py
+    **/wip/*
+    **/archive/*
+
+[report]
+show_missing = True
+skip_covered = True
+fail_under = 90
+precision = 1
+exclude_lines =
+    pragma: no cover
+    ^if __name__ == .__main__.:$
+    ^if TYPE_CHECKING:$
+
+[html]
+directory = htmlcov
