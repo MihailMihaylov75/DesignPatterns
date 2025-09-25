@@ -1,7 +1,7 @@
 __author__ = 'Mihail Mihaylov'
 
-# Composite Command a.k.a. Macro
-# also: Composite design pattern ;)
+# composite Command a.k.a. Macro
+# also: composite design pattern ;)
 
 import unittest
 from abc import ABC, abstractmethod
