@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,6 @@ __all__ = [
 # Module: device_command_runner
 # Purpose: Command pattern for device/PLC operations with compensating undo
 #          and transactional composite execution (atomic "all-or-nothing").
-# Python 3.8+ compatible typing.
 # ==========================
 
 
