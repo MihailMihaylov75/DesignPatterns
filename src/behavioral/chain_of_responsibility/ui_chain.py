@@ -1,18 +1,8 @@
 """
 ui_chain.py — Chain-of-Responsibility for robust UI actions in Selenium tests.
-
-This module defines a small, composable Chain-of-Responsibility (CoR) to perform
-UI interactions (e.g., a reliable click) as a sequence of handlers:
-FindElement -> EnsureVisible -> ScrollIntoView -> WaitStable -> ClickAction -> ValidateResult.
-
-Each handler either:
-  1) handles its responsibility and delegates to the next handler, or
-  2) returns a UIResult with an explanatory message.
-
-The flow produces a single, human-readable outcome that is easy to assert in tests.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional, Mapping
 from types import MappingProxyType
 from abc import ABC, abstractmethod
@@ -29,17 +19,21 @@ class UIRequest:
     Encapsulates the input for a UI action flow.
 
     :param driver: Selenium WebDriver instance used to interact with the page.
-    :param by: Locator strategy as string (e.g., By.CSS_SELECTOR -> a string constant).
+    :param by: Locator strategy as string (e.g., By.CSS_SELECTOR → a string constant).
     :param value: Locator value corresponding to the strategy.
     :param action: Logical action to perform ("click", ...). Handlers may ignore unknown actions.
     :param params: Extra parameters for fine-grained control (e.g., timeouts, validation locators).
-                   Must behave like a read-only mapping; defaults to an empty immutable mapping.
+                   Exposed as a read-only mapping.
     """
     driver: WebDriver
     by: str
     value: str
     action: str = "click"
-    params: Mapping[str, Any] = MappingProxyType({})
+    params: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Wraps `params` into an immutable MappingProxy for safety."""
+        object.__setattr__(self, "params", MappingProxyType(dict(self.params)))
 
 
 @dataclass(slots=True)
@@ -65,14 +59,10 @@ class UIHandler(ABC):
       - Implement a single responsibility in `handle`.
       - Delegate to the next handler when appropriate via `_delegate`.
       - Return a `UIResult` when it fully decides the outcome (success/failure).
-
-    Handlers are designed to be stateless; inject dependencies via `__init__` if needed.
     """
 
     def __init__(self, nxt: Optional["UIHandler"] = None) -> None:
         """
-        Initializes a handler with an optional next handler.
-
         :param nxt: Next handler in the chain to which this handler can delegate.
         """
         self._next = nxt
@@ -110,15 +100,7 @@ class UIHandler(ABC):
 
 # ---------- Concrete Handlers ----------
 class FindElement(UIHandler):
-    """
-    Waits until the element is present in the DOM.
-
-    Responsibility:
-      - Ensures the target element exists in the DOM before proceeding.
-
-    Parameters (via `req.params`):
-      - timeout_present (int): Max seconds to wait for presence (default: 8).
-    """
+    """Waits until the element is present in the DOM."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
@@ -138,15 +120,7 @@ class FindElement(UIHandler):
 
 
 class EnsureVisible(UIHandler):
-    """
-    Waits until the element is visible to the user.
-
-    Responsibility:
-      - Ensures the element has non-zero size and is not hidden, preventing interaction errors.
-
-    Parameters (via `req.params`):
-      - timeout_visible (int): Max seconds to wait for visibility (default: 8).
-    """
+    """Waits until the element is visible to the user."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
@@ -166,12 +140,7 @@ class EnsureVisible(UIHandler):
 
 
 class ScrollIntoView(UIHandler):
-    """
-    Scrolls the element into the viewport.
-
-    Responsibility:
-      - Brings off-screen elements into view, reducing click interception by fixed headers/footers.
-    """
+    """Scrolls the element into the viewport."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
@@ -189,15 +158,7 @@ class ScrollIntoView(UIHandler):
 
 
 class WaitStable(UIHandler):
-    """
-    Waits for the element's layout to stabilize.
-
-    Responsibility:
-      - Mitigates flakiness caused by animations/layout shifts just before interaction.
-
-    Parameters (via `req.params`):
-      - stability_delay (float): Seconds between two rect samples (default: 0.25).
-    """
+    """Waits for the element's layout to stabilize."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
@@ -221,15 +182,7 @@ class WaitStable(UIHandler):
 
 
 class ClickAction(UIHandler):
-    """
-    Performs the requested action (demo: `click`).
-
-    Responsibility:
-      - Executes the primary UI action once preconditions are met.
-
-    Notes:
-      - If `req.action` is not "click", this handler delegates without acting.
-    """
+    """Performs the requested action (demo: `click`)."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
@@ -240,32 +193,26 @@ class ClickAction(UIHandler):
                  (or success if this is the terminal handler).
         """
         if req.action != "click":
-            return self._delegate(req)  # Not our responsibility -> pass it on
+            return self._delegate(req)
 
         try:
             el = req.driver.find_element(req.by, req.value)
             el.click()
-            # Propagate further if something else (e.g., validation) needs to run.
             return self._delegate(req) or UIResult(True, "Clicked")
         except Exception:
             return UIResult(False, "Click failed")
 
 
 class ValidateResult(UIHandler):
-    """
-    Validates a post-condition after the action.
-
-    Responsibility:
-      - Confirms expected UI feedback (e.g., toast, label change) to deem the flow successful.
-
-    Parameters (via `req.params`):
-      - validate_locator (tuple[str, str]): Locator (by, value) for the expected element.
-      - timeout_validate (int): Max seconds to wait for validation (default: 6).
-    """
+    """Validates a post-condition after the action."""
 
     def handle(self, req: UIRequest) -> Optional[UIResult]:
         """
         Performs a simple post-condition validation if requested.
+
+        Supported params:
+          - validate_locator: tuple[str, str] for the element to appear
+          - timeout_validate: int seconds (default: 6)
 
         :param req: UIRequest containing optional validation parameters.
         :return: Success if the validation element appears; failure if it does not within timeout;
@@ -273,7 +220,7 @@ class ValidateResult(UIHandler):
         """
         validate = req.params.get("validate_locator")
         if validate:
-            by2, val2 = validate  # both should be str
+            by2, val2 = validate
             timeout = int(req.params.get("timeout_validate", 6))
             try:
                 WebDriverWait(req.driver, timeout).until(
