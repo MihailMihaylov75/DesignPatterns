@@ -1,3 +1,6 @@
+# Dependency
+selenium==4.37.0
+
 # Testing
 pytest==8.3.2
 
